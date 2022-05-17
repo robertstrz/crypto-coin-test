@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  api:
+    container_name: "coins"
+    image: "coins-api"
+    build:
+      context: ./
+      target: production
+      dockerfile: Dockerfile
+#    entrypoint: ["npm", "run", "start:prod"]
+    ports:
+      - '3000:3000'
