@@ -1,13 +1,16 @@
+import {Injectable} from "@nestjs/common";
 import {
     BehaviorSubject, empty, interval, map, Observable, of, scan, shareReplay,
     startWith, switchMap, timer, withLatestFrom
 } from "rxjs";
 import {GetCoinDto} from "./dto/get-coin.dto";
+import {ExchageRateService} from "./rate.service";
 
+@Injectable()
 export class CoinsRepository {
     readonly coins$: Observable<Array<GetCoinDto>> = new BehaviorSubject([]);
 
-    constructor() {
+    constructor(private exchangeRateService: ExchageRateService) {
         const coinQuotes$ = interval(5000).pipe(
             startWith([]),
             scan((acc, _) => {
@@ -42,6 +45,20 @@ export class CoinsRepository {
     }
 
     getLatestQuotes() {
-        return this.coins$;
+        return Promise.all([
+            this.exchangeRateService.getExchangeRate('EUR%2FBTC'),
+            this.exchangeRateService.getExchangeRate('EUR%2FLTC'),
+            this.exchangeRateService.getExchangeRate('EUR%2FETH')]
+        ).then((results) => {
+            const coinsDto = results.map((exchangeItem) => {
+                const { pair, rate } = exchangeItem;
+                const coinDto: GetCoinDto = {
+                    name: pair.slice(pair.indexOf('/') + 1, pair.length),
+                    prices: [`${(1/rate)}`]
+                }
+                return coinDto;
+            });
+            return coinsDto;
+        })
     }
 }

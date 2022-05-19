@@ -2,15 +2,20 @@ import {Injectable} from '@nestjs/common';
 import {CoinsRepository} from './coins.repository';
 import {CreateCoinDto} from './dto/create-coin.dto';
 import {UpdateCoinDto} from './dto/update-coin.dto';
+import { ExchageRateService } from './rate.service';
 
 @Injectable()
 export class CoinsService {
 
-    constructor(private coinsRepository: CoinsRepository) {
+    constructor(private coinsRepository: CoinsRepository, private exchangeRateService: ExchageRateService) {
     }
 
     create(createCoinDto: CreateCoinDto) {
         return 'This action adds a new coin';
+    }
+
+    exchangeRate(pair: String) {
+        return this.exchangeRateService.getExchangeRate(pair);
     }
 
     findAll() {
